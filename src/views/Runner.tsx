@@ -7,6 +7,7 @@ import { pushHistory } from '../services/github';
 import { showToast } from '../services/toast';
 import { flatten } from '../services/flattener';
 import { playCountdownBeep, unlockAudio, speak } from '../services/audio';
+import { shouldAnnounceHalfway } from '../services/runnerRules';
 import * as wakelock from '../services/wakelock';
 import { ArrowLeft, X, Pencil, Play, Pause as PauseIcon, SkipBack, SkipForward } from '../icons';
 
@@ -31,6 +32,7 @@ export function Runner({ filename }: { filename: string }) {
   const sessionStartRef = useRef(Date.now());
   const lastTickRef = useRef(0);
   const rafRef = useRef(0);
+  const currentIndexRef = useRef(0);
   const spokenCurrentRef = useRef(false);
   const spokenNextRef = useRef(false);
   const spokenHalfwayRef = useRef(false);
@@ -105,6 +107,22 @@ export function Runner({ filename }: { filename: string }) {
     return () => cancelAnimationFrame(warmupRafRef.current);
   }, [warmingUp, warmupTimeLeft, steps]);
 
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  const resetStep = useCallback((nextIdx: number) => {
+    currentIndexRef.current = nextIdx;
+    setCurrentIndex(nextIdx);
+    const duration = steps[nextIdx].duration;
+    setTimeLeft(duration);
+    startTimeRef.current = Date.now();
+    lastTickRef.current = duration;
+    spokenCurrentRef.current = false;
+    spokenNextRef.current = false;
+    spokenHalfwayRef.current = false;
+  }, [steps]);
+
   // Timer loop using requestAnimationFrame + Date.now() for precision
   useEffect(() => {
     if (!running || done || steps.length === 0) return;
@@ -119,16 +137,17 @@ export function Runner({ filename }: { filename: string }) {
       setTimeLeft(remaining);
 
       const s = settings.current;
+      const idx = currentIndexRef.current;
 
       // Announce current step at start
       if (s.announceCurrent && !spokenCurrentRef.current) {
-        say(steps[currentIndex].label);
+        say(steps[idx].label);
         spokenCurrentRef.current = true;
       }
 
       // Announce next step N seconds before current ends
       if (s.announceNext && !spokenNextRef.current && remaining <= s.announceNextSeconds) {
-        const nextIdx = currentIndex + 1;
+        const nextIdx = idx + 1;
         if (nextIdx < steps.length) {
           say('Next: ' + steps[nextIdx].label);
         }
@@ -136,21 +155,21 @@ export function Runner({ filename }: { filename: string }) {
       }
 
       // Announce halfway
-      const halfDuration = steps[currentIndex].duration / 2;
-      if (s.announceHalfway && !spokenHalfwayRef.current && remaining <= halfDuration) {
+      const halfDuration = steps[idx].duration / 2;
+      if (s.announceHalfway && shouldAnnounceHalfway(steps[idx].duration) && !spokenHalfwayRef.current && remaining <= halfDuration) {
         say('Halfway done');
         spokenHalfwayRef.current = true;
       }
 
       if (remaining <= 0) {
         // If current step has pause, stop and let user press play
-        if (steps[currentIndex].pause) {
+        if (steps[idx].pause) {
           setTimeLeft(0);
           setRunning(false);
           return;
         }
         // Move to next step
-        const nextIdx = currentIndex + 1;
+        const nextIdx = idx + 1;
         if (nextIdx >= steps.length) {
           setDone(true);
           setRunning(false);
@@ -161,13 +180,7 @@ export function Runner({ filename }: { filename: string }) {
           saveSession();
           return;
         }
-        setCurrentIndex(nextIdx);
-        setTimeLeft(steps[nextIdx].duration);
-        startTimeRef.current = Date.now();
-        lastTickRef.current = steps[nextIdx].duration;
-        spokenCurrentRef.current = false;
-        spokenNextRef.current = false;
-        spokenHalfwayRef.current = false;
+        resetStep(nextIdx);
       }
 
       rafRef.current = requestAnimationFrame(tick);
@@ -175,7 +188,7 @@ export function Runner({ filename }: { filename: string }) {
 
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [running, done, steps, currentIndex, saveSession, timeLeft]);
+  }, [running, done, steps, saveSession, resetStep]);
 
   // Beep effect: watches timeLeft and fires beeps at second boundaries
   const prevSecRef = useRef(-1);
@@ -236,13 +249,7 @@ export function Runner({ filename }: { filename: string }) {
         saveSession();
         return;
       }
-      setCurrentIndex(nextIdx);
-      setTimeLeft(steps[nextIdx].duration);
-      startTimeRef.current = Date.now();
-      lastTickRef.current = steps[nextIdx].duration;
-      spokenCurrentRef.current = false;
-      spokenNextRef.current = false;
-      spokenHalfwayRef.current = false;
+      resetStep(nextIdx);
       setRunning(true);
       return;
     }
@@ -259,18 +266,10 @@ export function Runner({ filename }: { filename: string }) {
     if (warmingUp || done) return;
     if (currentIndex > 0) {
       const prevIdx = currentIndex - 1;
-      setCurrentIndex(prevIdx);
-      setTimeLeft(steps[prevIdx].duration);
-      startTimeRef.current = Date.now();
-      lastTickRef.current = steps[prevIdx].duration;
+      resetStep(prevIdx);
     } else {
-      setTimeLeft(steps[0].duration);
-      startTimeRef.current = Date.now();
-      lastTickRef.current = steps[0].duration;
+      resetStep(0);
     }
-    spokenCurrentRef.current = false;
-    spokenNextRef.current = false;
-    spokenHalfwayRef.current = false;
   };
 
   const handleNext = () => {
@@ -292,13 +291,7 @@ export function Runner({ filename }: { filename: string }) {
       saveSession();
       return;
     }
-    setCurrentIndex(nextIdx);
-    setTimeLeft(steps[nextIdx].duration);
-    startTimeRef.current = Date.now();
-    lastTickRef.current = steps[nextIdx].duration;
-    spokenCurrentRef.current = false;
-    spokenNextRef.current = false;
-    spokenHalfwayRef.current = false;
+    resetStep(nextIdx);
     if (wasPaused) setRunning(true);
   };
 

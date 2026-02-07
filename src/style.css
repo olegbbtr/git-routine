@@ -41,17 +41,18 @@ button,
 a.btn-primary,
 a.btn-icon {
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   border: none;
   border-radius: var(--radius);
-  padding: 8px 16px;
+  padding: 10px 18px;
   transition: background 0.15s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
+/* Buttons */
 .btn-primary {
   background: var(--accent);
   color: white;
@@ -61,48 +62,44 @@ a.btn-icon {
   background: var(--accent-hover);
 }
 
-.btn-danger {
-  background: var(--danger);
-  color: white;
-}
-
-.btn-danger:hover {
-  background: var(--danger-hover);
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text2);
-  padding: 8px;
-}
-
-.btn-ghost:hover {
-  color: var(--text);
-  background: var(--surface2);
-}
-
-
 .btn-icon {
   background: var(--surface2);
   color: var(--text);
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .btn-icon:hover {
   background: var(--border);
 }
 
+.num-stepper-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--text2);
+  border-radius: var(--radius);
+  padding: 0;
+}
+
+.num-stepper-btn:hover {
+  color: var(--text);
+  background: var(--surface2);
+}
+
 input,
 select {
   font-family: inherit;
-  font-size: 14px;
-  padding: 8px 12px;
+  font-size: 15px;
+  padding: 10px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
@@ -211,8 +208,8 @@ select:focus {
 
 .toggle {
   position: relative;
-  width: 44px;
-  height: 24px;
+  width: 50px;
+  height: 28px;
   cursor: pointer;
 }
 
@@ -234,8 +231,8 @@ select:focus {
 .toggle-slider::after {
   content: '';
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   left: 3px;
   bottom: 3px;
   background: var(--text2);
@@ -248,7 +245,7 @@ select:focus {
 }
 
 .toggle input:checked+.toggle-slider::after {
-  transform: translateX(20px);
+  transform: translateX(22px);
   background: white;
 }
 
@@ -280,9 +277,9 @@ select:focus {
 }
 
 .runner-controls button {
-  width: 56px;
-  height: 56px;
-  font-size: 24px;
+  width: 64px;
+  height: 64px;
+  font-size: 26px;
   border-radius: 50%;
 }
 
@@ -332,6 +329,39 @@ select:focus {
   cursor: grabbing;
 }
 
+.editor-node-header>.btn-icon {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+  width: 34px;
+  height: 34px;
+  font-size: 16px;
+}
+
+.editor-node-header>.btn-icon:hover {
+  color: var(--text);
+  background: var(--surface2);
+}
+
+.editor-node-header>.btn-icon[aria-pressed] {
+  opacity: 0.4;
+}
+
+.editor-node-header>.btn-icon[aria-pressed]:hover {
+  opacity: 0.7;
+  border-color: var(--text2);
+}
+
+.editor-node-header>.btn-icon[aria-pressed='true'] {
+  opacity: 1;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.editor-node-header>.btn-icon[aria-pressed='true']:hover {
+  opacity: 1;
+}
+
 .editor-node-body {
   padding: 4px 12px 12px 24px;
 }
@@ -356,6 +386,19 @@ select:focus {
   border-radius: 4px;
 }
 
+.editor-block-total {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.editor-repeat-label {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+
 .editor-actions {
   display: flex;
   gap: 8px;
@@ -365,36 +408,6 @@ select:focus {
 .drag-over {
   border-color: var(--accent);
   background: var(--surface2);
-}
-
-.btn-pause {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text2);
-  opacity: 0.4;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.btn-pause:hover {
-  opacity: 0.7;
-  border-color: var(--text2);
-}
-
-.btn-pause-on {
-  opacity: 1;
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-.btn-pause-on:hover {
-  opacity: 1;
 }
 
 .inline-input {
@@ -416,12 +429,16 @@ select:focus {
 }
 
 .duration-input {
-  width: 48px;
+  width: 3ch;
+  min-width: 3ch;
+  padding: 2px 4px;
   text-align: center;
 }
 
 .repeats-input {
-  width: 40px;
+  width: 3ch;
+  min-width: 3ch;
+  padding: 2px 4px;
   text-align: center;
 }
 
@@ -435,20 +452,30 @@ select:focus {
 
 .num-stepper-suffix {
   position: absolute;
-  right: 30px;
-  font-size: 13px;
+  right: 36px;
+  font-size: 14px;
   color: var(--text2);
   pointer-events: none;
 }
 
 .num-stepper-unit {
-  all: unset;
   pointer-events: auto;
-  cursor: pointer;
+  position: static;
   font-weight: 600;
   color: var(--accent);
-  width: 16px;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  margin: 0 4px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
   text-align: center;
+  font-size: 14px;
+}
+
+.num-stepper-unit:hover {
+  background: var(--border);
 }
 
 .num-stepper input {
@@ -462,30 +489,10 @@ select:focus {
   margin: 0;
 }
 
-.num-stepper-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: var(--text2);
-  border-radius: var(--radius);
-  padding: 0;
-}
-
-.num-stepper-btn:hover {
-  color: var(--text);
-  background: var(--surface2);
-}
-
 /* Metadata */
 .editor-meta {
   font-size: 12px;
-  color: var(--text2);
+  color: var(--text);
   margin-bottom: 16px;
   line-height: 1.8;
 }
@@ -493,6 +500,8 @@ select:focus {
 .editor-meta-label {
   display: inline-block;
   width: 70px;
+  color: var(--text);
+  font-weight: 600;
 }
 
 /* Toast */

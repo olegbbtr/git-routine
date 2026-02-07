@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "tsc && node --test test/**/*.test.mjs"
   },
   "dependencies": {
     "preact": "^10.28.3"

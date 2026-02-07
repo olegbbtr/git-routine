@@ -61,13 +61,18 @@ export function generateId(): string {
   return Math.random().toString(36).substring(2, 10);
 }
 
+const NODE_KEY = Symbol('node_key');
 const nodeKeys = new WeakMap<object, string>();
+
+type KeyedRoutineNode = RoutineNode & { [NODE_KEY]?: string };
 export function getNodeKey(node: RoutineNode): string {
-  let key = nodeKeys.get(node);
+  const keyed = node as KeyedRoutineNode;
+  let key = keyed[NODE_KEY] || nodeKeys.get(node);
   if (!key) {
     key = generateId();
-    nodeKeys.set(node, key);
+    keyed[NODE_KEY] = key;
   }
+  nodeKeys.set(node, key);
   return key;
 }
 

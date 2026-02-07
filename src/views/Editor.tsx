@@ -75,8 +75,10 @@ function NodeEditor({ node, onUpdate, onDelete, onDragStart, onDragOver, onDrop 
             onInput={(e) => onUpdate({ ...block, label: (e.target as HTMLInputElement).value })}
             style="flex:1"
           />
-          <span style="font-size:13px;color:var(--text2)">{formatDuration(calcDuration(block.children) * block.repeats)}</span>
-          <span style="font-size:13px;color:var(--text2)">Repeat:</span>
+          <span class="editor-block-total" title={formatDuration(calcDuration(block.children) * block.repeats)}>
+            {formatDuration(calcDuration(block.children) * block.repeats)}
+          </span>
+          <span class="editor-repeat-label">Repeat:</span>
           <div class="num-stepper">
             <button class="num-stepper-btn" type="button" onClick={() => { if (block.repeats > 1) onUpdate({ ...block, repeats: block.repeats - 1 }); }}>-</button>
             <input
@@ -91,7 +93,7 @@ function NodeEditor({ node, onUpdate, onDelete, onDragStart, onDragOver, onDrop 
             />
             <button class="num-stepper-btn" type="button" onClick={() => onUpdate({ ...block, repeats: block.repeats + 1 })}>+</button>
           </div>
-          <button class="btn-ghost" onClick={onDelete} title="Delete" style="color:var(--danger)"><Delete size={16} /></button>
+          <button class="btn-icon" onClick={onDelete} title="Delete" style="color:var(--danger)"><Delete size={16} /></button>
         </div>
         <div class="editor-node-body">
           {block.children.map((child, i) => (
@@ -122,10 +124,10 @@ function NodeEditor({ node, onUpdate, onDelete, onDragStart, onDragOver, onDrop 
             />
           ))}
           <div class="editor-actions">
-            <button class="btn-primary" onClick={addStep} style="font-size:13px;padding:4px 12px">+ Step</button>
-            <button class="btn-primary" onClick={addBlock} style="font-size:13px;padding:4px 12px;background:var(--surface2)">+ Block</button>
-            <button class="btn-primary" onClick={addBreak} style="font-size:13px;padding:4px 12px;background:var(--surface2)">+ Break</button>
-            <button class="btn-primary" onClick={addPause} style="font-size:13px;padding:4px 12px;background:var(--surface2)">+ Pause</button>
+            <button class="btn-primary" onClick={addStep}>+ Step</button>
+            <button class="btn-primary" onClick={addBlock} style="background:var(--surface2)">+ Block</button>
+            <button class="btn-primary" onClick={addBreak} style="background:var(--surface2)">+ Break</button>
+            <button class="btn-primary" onClick={addPause} style="background:var(--surface2)">+ Pause</button>
           </div>
         </div>
       </div>
@@ -162,16 +164,17 @@ function NodeEditor({ node, onUpdate, onDelete, onDragStart, onDragOver, onDrop 
             min="1"
           />
           <button class="num-stepper-btn" type="button" onClick={() => { const inc = step.unit === 'm' ? 1 : 10; onUpdate({ ...step, duration: step.duration + inc }); }}>+</button>
-          <button type="button" class="num-stepper-suffix num-stepper-unit" onClick={() => onUpdate({ ...step, unit: step.unit === 'm' ? 's' : 'm' })}>{step.unit === 'm' ? 'm' : 's'}</button>
+          <button type="button" class="num-stepper-btn num-stepper-unit" onClick={() => onUpdate({ ...step, unit: step.unit === 'm' ? 's' : 'm' })}>{step.unit === 'm' ? 'm' : 's'}</button>
         </div>
         <button
-          class={`btn-pause ${step.pause ? 'btn-pause-on' : ''}`}
+          class="btn-icon"
+          aria-pressed={step.pause}
           onClick={() => onUpdate({ ...step, pause: !step.pause })}
           title={step.pause ? 'Pause (on)' : 'Pause (off)'}
         >
           <Pause size={16} />
         </button>
-        <button class="btn-ghost" onClick={onDelete} title="Delete" style="color:var(--danger)"><Delete size={16} /></button>
+        <button class="btn-icon" onClick={onDelete} title="Delete" style="color:var(--danger)"><Delete size={16} /></button>
       </div>
     </div>
   );
@@ -312,10 +315,10 @@ export function Editor({ filename: initialFilename }: { filename: string }) {
       ))}
 
       <div class="editor-actions">
-        <button class="btn-primary" onClick={addStep} style="font-size:13px;padding:4px 12px">+ Step</button>
-        <button class="btn-primary" onClick={addBlock} style="font-size:13px;padding:4px 12px;background:var(--surface2)">+ Block</button>
-        <button class="btn-primary" onClick={addBreak} style="font-size:13px;padding:4px 12px;background:var(--surface2)">+ Break</button>
-        <button class="btn-primary" onClick={addPause} style="font-size:13px;padding:4px 12px;background:var(--surface2)">+ Pause</button>
+        <button class="btn-primary" onClick={addStep}>+ Step</button>
+        <button class="btn-primary" onClick={addBlock} style="background:var(--surface2)">+ Block</button>
+        <button class="btn-primary" onClick={addBreak} style="background:var(--surface2)">+ Break</button>
+        <button class="btn-primary" onClick={addPause} style="background:var(--surface2)">+ Pause</button>
       </div>
 
       <datalist id="duration-presets">

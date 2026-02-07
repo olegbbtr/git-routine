@@ -141,7 +141,7 @@ export function Settings() {
 
         <div class="toggle-row">
           <span>Import examples</span>
-          <button type="button" class="btn-primary" onClick={handleImportExamples} style="font-size:13px;padding:6px 12px">
+          <button type="button" class="btn-primary" onClick={handleImportExamples}>
             Import
           </button>
         </div>
