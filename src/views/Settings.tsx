@@ -234,10 +234,6 @@ export function Settings() {
             </label>
           </div>
         </div>
-        <datalist id="announce-presets">
-          {[2, 3, 5, 10, 15, 20, 30].map(n => <option key={n} value={n} />)}
-        </datalist>
-
         <div class="toggle-row">
           <span>Halfway</span>
           <label class="toggle">

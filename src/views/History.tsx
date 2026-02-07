@@ -9,6 +9,15 @@ import { ArrowLeft, Pencil, Play, Delete } from '../icons';
 
 export function History() {
   const [logs, setLogs] = useState<SessionLog[]>(() => loadHistory());
+  const routineByName = (() => {
+    const map = new Map<string, string>();
+    for (const [filename, routine] of Object.entries(loadRoutines())) {
+      if (!map.has(routine.name)) {
+        map.set(routine.name, filename);
+      }
+    }
+    return map;
+  })();
 
   useEffect(() => {
     const settings = loadSettings();
@@ -25,11 +34,6 @@ export function History() {
     setLogs(loadHistory());
   };
 
-  const findRoutine = (routineName: string) => {
-    const routines = loadRoutines();
-    return Object.entries(routines).find(([, r]) => r.name === routineName);
-  };
-
   return (
     <div>
       <div class="header">
@@ -40,23 +44,26 @@ export function History() {
       {logs.length === 0 ? (
         <div class="empty">No sessions recorded yet.</div>
       ) : (
-        logs.map((log) => (
-          <div class="card" key={log.id}>
-            <div class="card-row">
-              <div>
-                <div class="card-title">{log.routineName}</div>
-                <div class="card-sub">
-                  {formatDateTime(log.timestamp)} &middot; {formatDuration(log.durationSeconds)}
+        logs.map((log) => {
+          const filename = routineByName.get(log.routineName);
+          return (
+            <div class="card" key={log.id}>
+              <div class="card-row">
+                <div>
+                  <div class="card-title">{log.routineName}</div>
+                  <div class="card-sub">
+                    {formatDateTime(log.timestamp)} &middot; {formatDuration(log.durationSeconds)}
+                  </div>
+                </div>
+                <div style="display:flex;gap:6px">
+                  {filename && <button class="btn-icon" onClick={() => navigate('edit/' + filename)} title="Edit"><Pencil size={20} /></button>}
+                  <button class="btn-icon" onClick={() => { if (filename) navigate('run/' + filename); }} title="Run again"><Play size={20} /></button>
+                  <button class="btn-icon" onClick={() => handleDelete(log.id)} title="Delete" style="color:var(--danger)"><Delete size={20} /></button>
                 </div>
               </div>
-              <div style="display:flex;gap:6px">
-                {findRoutine(log.routineName) && <button class="btn-icon" onClick={() => navigate('edit/' + findRoutine(log.routineName)![0])} title="Edit"><Pencil size={20} /></button>}
-                <button class="btn-icon" onClick={() => { const e = findRoutine(log.routineName); if (e) navigate('run/' + e[0]); }} title="Run again"><Play size={20} /></button>
-                <button class="btn-icon" onClick={() => handleDelete(log.id)} title="Delete" style="color:var(--danger)"><Delete size={20} /></button>
-              </div>
             </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );

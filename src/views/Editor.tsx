@@ -16,11 +16,34 @@ interface NodeEditorProps {
   onDrop: (e: DragEvent) => void;
 }
 
+function createStep(step: Partial<Step> = {}): Step {
+  return {
+    label: 'Step',
+    duration: 30,
+    ...step,
+  };
+}
+
+function createBlock(block: Partial<Block> = {}): Block {
+  return {
+    label: 'Block',
+    repeats: 1,
+    children: [],
+    ...block,
+  };
+}
+
 function NodeEditor({ node, onUpdate, onDelete, onDragStart, onDragOver, onDrop }: NodeEditorProps) {
   const [dragOver, setDragOver] = useState(false);
 
   if (isBlock(node)) {
     const block = node;
+    const appendChild = (child: RoutineNode) => {
+      onUpdate({
+        ...block,
+        children: [...block.children, child],
+      });
+    };
     const updateChild = (index: number, child: RoutineNode) => {
       const children = [...block.children];
       children[index] = child;
@@ -31,31 +54,16 @@ function NodeEditor({ node, onUpdate, onDelete, onDragStart, onDragOver, onDrop 
       onUpdate({ ...block, children });
     };
     const addStep = () => {
-      onUpdate({
-        ...block,
-        children: [...block.children, { label: 'Step', duration: 30 } as Step],
-      });
+      appendChild(createStep());
     };
     const addBlock = () => {
-      onUpdate({
-        ...block,
-        children: [
-          ...block.children,
-          { label: 'Block', repeats: 1, children: [] } as Block,
-        ],
-      });
+      appendChild(createBlock());
     };
     const addBreak = () => {
-      onUpdate({
-        ...block,
-        children: [...block.children, { label: 'Break', duration: 30 } as Step],
-      });
+      appendChild(createStep({ label: 'Break' }));
     };
     const addPause = () => {
-      onUpdate({
-        ...block,
-        children: [...block.children, { label: 'Pause', duration: 5, pause: true } as Step],
-      });
+      appendChild(createStep({ label: 'Pause', duration: 5, pause: true }));
     };
 
     const blockKey = getNodeKey(block);
@@ -186,6 +194,15 @@ export function Editor({ filename: initialFilename }: { filename: string }) {
   const [saving, setSaving] = useState(false);
   const [filename, setFilename] = useState(initialFilename);
   const currentFilenameRef = useRef(initialFilename);
+  const markEdited = (next: Routine): Routine => ({
+    ...next,
+    edited: new Date().toISOString(),
+  });
+  const persistLocal = (nextFilename: string, nextRoutine: Routine) => {
+    saveRoutine(nextFilename, nextRoutine);
+    setRoutine(nextRoutine);
+    setFilename(nextFilename);
+  };
 
   if (!routine) {
     return (
@@ -200,46 +217,46 @@ export function Editor({ filename: initialFilename }: { filename: string }) {
   }
 
   const updateNode = (index: number, node: RoutineNode) => {
-    const data = [...routine.data];
-    data[index] = node;
-    setRoutine({ ...routine, data, edited: new Date().toISOString() });
+    setRoutine((prev) => {
+      if (!prev) return prev;
+      const data = [...prev.data];
+      data[index] = node;
+      return markEdited({ ...prev, data });
+    });
   };
 
   const deleteNode = (index: number) => {
-    const data = routine.data.filter((_, i) => i !== index);
-    setRoutine({ ...routine, data, edited: new Date().toISOString() });
+    setRoutine((prev) => {
+      if (!prev) return prev;
+      const data = prev.data.filter((_, i) => i !== index);
+      return markEdited({ ...prev, data });
+    });
+  };
+
+  const addNode = (node: RoutineNode) => {
+    setRoutine((prev) => {
+      if (!prev) return prev;
+      return markEdited({
+        ...prev,
+        data: [...prev.data, node],
+      });
+    });
   };
 
   const addStep = () => {
-    setRoutine({
-      ...routine,
-      data: [...routine.data, { label: 'Step', duration: 30 } as Step],
-      edited: new Date().toISOString(),
-    });
+    addNode(createStep());
   };
 
   const addBlock = () => {
-    setRoutine({
-      ...routine,
-      data: [...routine.data, { label: 'Block', repeats: 1, children: [] } as Block],
-      edited: new Date().toISOString(),
-    });
+    addNode(createBlock());
   };
 
   const addBreak = () => {
-    setRoutine({
-      ...routine,
-      data: [...routine.data, { label: 'Break', duration: 30 } as Step],
-      edited: new Date().toISOString(),
-    });
+    addNode(createStep({ label: 'Break' }));
   };
 
   const addPause = () => {
-    setRoutine({
-      ...routine,
-      data: [...routine.data, { label: 'Pause step', duration: 5, pause: true } as Step],
-      edited: new Date().toISOString(),
-    });
+    addNode(createStep({ label: 'Pause step', duration: 5, pause: true }));
   };
 
   const handleSave = async () => {
@@ -248,17 +265,14 @@ export function Editor({ filename: initialFilename }: { filename: string }) {
     const oldFilename = currentFilenameRef.current;
     const newFilename = filename.replace(/\.json$/, '').trim() || currentFilenameRef.current;
     const renamed = newFilename !== oldFilename;
-    const updated = { ...routine, edited: new Date().toISOString() };
+    const updated = markEdited(routine);
 
-    // Handle rename
     if (renamed) {
       deleteRoutine(oldFilename);
       currentFilenameRef.current = newFilename;
     }
 
-    saveRoutine(newFilename, updated);
-    setRoutine(updated);
-    setFilename(newFilename);
+    persistLocal(newFilename, updated);
 
     const settings = loadSettings();
     if (settings.githubToken && settings.repo) {
@@ -289,10 +303,23 @@ export function Editor({ filename: initialFilename }: { filename: string }) {
         <input
           class="inline-input"
           value={routine.name}
-          onInput={(e) => setRoutine({ ...routine, name: (e.target as HTMLInputElement).value })}
+          onInput={(e) => {
+            const name = (e.target as HTMLInputElement).value;
+            setRoutine((prev) => (prev ? markEdited({ ...prev, name }) : prev));
+          }}
           style="font-size:20px;font-weight:600;flex:1"
         />
-        <button class="btn-icon" onClick={() => { saveRoutine(currentFilenameRef.current, { ...routine, edited: new Date().toISOString() }); navigate('run/' + currentFilenameRef.current); }} title="Run"><Play size={20} /></button>
+        <button
+          class="btn-icon"
+          onClick={() => {
+            const updated = markEdited(routine);
+            persistLocal(currentFilenameRef.current, updated);
+            navigate('run/' + currentFilenameRef.current);
+          }}
+          title="Run"
+        >
+          <Play size={20} />
+        </button>
         <button class="btn-primary" onClick={handleSave} disabled={saving}>
           {saving ? 'Saving...' : 'Save'}
         </button>
@@ -331,12 +358,6 @@ export function Editor({ filename: initialFilename }: { filename: string }) {
         <button class="btn-primary" onClick={addBreak} style="background:var(--surface2)">+ Break</button>
         <button class="btn-primary" onClick={addPause} style="background:var(--surface2)">+ Pause</button>
       </div>
-
-      <datalist id="duration-presets">
-        {[5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 300].map(n => (
-          <option key={n} value={n} />
-        ))}
-      </datalist>
     </div>
   );
 }

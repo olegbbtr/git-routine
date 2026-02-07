@@ -71,21 +71,30 @@ interface DirEntry {
   name: string;
   path: string;
   sha: string;
+  type?: string;
 }
 
+function isRoutineJsonFile(entry: Pick<DirEntry, 'name' | 'type'>): boolean {
+  if (entry.type && entry.type !== 'file') return false;
+  return /\.json$/i.test(entry.name);
+}
 
 export async function countRemoteRoutines(repo: string, token: string): Promise<number> {
   const res = await ghFetch(`/repos/${repo}/contents/routines`, token);
   if (!res.ok) return 0;
-  const entries: DirEntry[] = await res.json();
-  return entries.filter((e) => e.name.endsWith('.json')).length;
+  const data: unknown = await res.json();
+  if (!Array.isArray(data)) return 0;
+  const entries = data as DirEntry[];
+  return entries.filter(isRoutineJsonFile).length;
 }
 
 export async function pullRoutines(repo: string, token: string): Promise<{ routines: Record<string, Routine>; errors: string[] } | null> {
   const res = await ghFetch(`/repos/${repo}/contents/routines`, token);
   if (!res.ok) return null; // directory doesn't exist yet
-  const entries: DirEntry[] = await res.json();
-  const jsonFiles = entries.filter((e) => e.name.endsWith('.json'));
+  const data: unknown = await res.json();
+  if (!Array.isArray(data)) return null;
+  const entries = data as DirEntry[];
+  const jsonFiles = entries.filter(isRoutineJsonFile);
 
   const local = storage.loadRoutines();
   let changed = false;
@@ -101,7 +110,13 @@ export async function pullRoutines(repo: string, token: string): Promise<{ routi
     }
     const file = await getFile(repo, entry.path, token);
     if (!file) continue;
-    const parsed = JSON.parse(file.content);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(file.content);
+    } catch {
+      errors.push(filename);
+      continue;
+    }
     if (!validateRoutine(parsed)) {
       errors.push(filename);
       continue;
@@ -156,7 +171,14 @@ export async function pullHistory(repo: string, token: string): Promise<SessionL
   const remoteSha = file.sha;
   const localSha = storage.getHistorySha();
   if (remoteSha === localSha) return null;
-  const history: SessionLog[] = JSON.parse(file.content);
+  let history: SessionLog[];
+  try {
+    const parsed = JSON.parse(file.content);
+    if (!Array.isArray(parsed)) return null;
+    history = parsed as SessionLog[];
+  } catch {
+    return null;
+  }
   storage.saveHistory(history);
   storage.setHistorySha(remoteSha);
   return history;
