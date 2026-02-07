@@ -87,10 +87,10 @@ export async function pullRoutines(repo: string, token: string): Promise<{ routi
   const entries: DirEntry[] = await res.json();
   const jsonFiles = entries.filter((e) => e.name.endsWith('.json'));
 
-  let changed = false;
-  const routines: Record<string, Routine> = {};
-  const errors: string[] = [];
   const local = storage.loadRoutines();
+  let changed = false;
+  const routines: Record<string, Routine> = { ...local };
+  const errors: string[] = [];
 
   for (const entry of jsonFiles) {
     const filename = entry.name.replace(/\.json$/, '');
@@ -129,12 +129,23 @@ export async function pushRoutine(repo: string, token: string, filename: string,
 
 export async function deleteRoutineRemote(repo: string, token: string, filename: string): Promise<void> {
   const path = `routines/${filename}.json`;
-  const sha = storage.getRoutineSha(filename);
+  let sha = storage.getRoutineSha(filename);
+  if (!sha) {
+    const file = await getFile(repo, path, token);
+    sha = file?.sha || '';
+  }
   if (!sha) return;
-  await ghFetch(`/repos/${repo}/contents/${path}`, token, {
+  const res = await ghFetch(`/repos/${repo}/contents/${path}`, token, {
     method: 'DELETE',
     body: JSON.stringify({ message: `Delete routine: ${filename}`, sha }),
   });
+  if (res.status === 404) {
+    storage.removeRoutineSha(filename);
+    return;
+  }
+  if (!res.ok) {
+    throw new Error(`Failed to delete ${path}: ${res.status}`);
+  }
   storage.removeRoutineSha(filename);
 }
 

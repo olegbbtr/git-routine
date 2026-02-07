@@ -2,8 +2,8 @@ import { useState, useRef } from 'preact/hooks';
 import { navigate } from '../app';
 import type { Routine, RoutineNode, Block, Step } from '../types';
 import { isBlock, formatDateTime, getNodeKey, calcDuration, formatDuration } from '../types';
-import { getRoutine, saveRoutine, deleteRoutine, loadSettings } from '../services/storage';
-import { pushRoutine } from '../services/github';
+import { getRoutine, saveRoutine, deleteRoutine, loadSettings, removeRoutineSha } from '../services/storage';
+import { pushRoutine, deleteRoutineRemote } from '../services/github';
 import { showToast } from '../services/toast';
 import { ArrowLeft, Play, Pause, Delete } from '../icons';
 
@@ -245,12 +245,14 @@ export function Editor({ filename: initialFilename }: { filename: string }) {
   const handleSave = async () => {
     if (!routine) return;
 
+    const oldFilename = currentFilenameRef.current;
     const newFilename = filename.replace(/\.json$/, '').trim() || currentFilenameRef.current;
+    const renamed = newFilename !== oldFilename;
     const updated = { ...routine, edited: new Date().toISOString() };
 
     // Handle rename
-    if (newFilename !== currentFilenameRef.current) {
-      deleteRoutine(currentFilenameRef.current);
+    if (renamed) {
+      deleteRoutine(oldFilename);
       currentFilenameRef.current = newFilename;
     }
 
@@ -263,10 +265,19 @@ export function Editor({ filename: initialFilename }: { filename: string }) {
       setSaving(true);
       try {
         await pushRoutine(settings.repo, settings.githubToken, newFilename, updated);
+        if (renamed) {
+          await deleteRoutineRemote(settings.repo, settings.githubToken, oldFilename);
+        }
         showToast('Saved', 'success');
-      } catch { showToast('GitHub sync failed'); }
-      setSaving(false);
+      } catch {
+        showToast('GitHub sync failed');
+      } finally {
+        setSaving(false);
+      }
     } else {
+      if (renamed) {
+        removeRoutineSha(oldFilename);
+      }
       showToast('Saved', 'success');
     }
   };

@@ -4,22 +4,8 @@ import { Editor } from './views/Editor';
 import { Runner } from './views/Runner';
 import { History } from './views/History';
 import { Settings } from './views/Settings';
-
-type Route =
-  | { view: 'dashboard' }
-  | { view: 'settings' }
-  | { view: 'history' }
-  | { view: 'editor'; filename: string }
-  | { view: 'runner'; filename: string };
-
-function parseHash(hash: string): Route {
-  const h = hash.replace(/^#\/?/, '');
-  if (h.startsWith('edit/')) return { view: 'editor', filename: decodeURIComponent(h.slice(5)) };
-  if (h.startsWith('run/')) return { view: 'runner', filename: decodeURIComponent(h.slice(4)) };
-  if (h === 'settings') return { view: 'settings' };
-  if (h === 'history') return { view: 'history' };
-  return { view: 'dashboard' };
-}
+import { parseHash } from './services/router';
+import type { Route } from './services/router';
 
 export function navigate(path: string): void {
   window.location.hash = '#' + path;

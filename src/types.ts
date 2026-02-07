@@ -108,10 +108,38 @@ export function formatDateTime(iso: string): string {
 export function validateRoutine(obj: unknown): obj is Routine {
   if (!obj || typeof obj !== 'object') return false;
   const r = obj as Record<string, unknown>;
+  const isStr = (v: unknown) => typeof v === 'string';
+  const isOptStr = (v: unknown) => typeof v === 'undefined' || isStr(v);
+
+  const isValidNode = (node: unknown): node is RoutineNode => {
+    if (!node || typeof node !== 'object') return false;
+    const n = node as Record<string, unknown>;
+
+    if (Array.isArray(n.children)) {
+      return (
+        isStr(n.label) &&
+        Number.isInteger(n.repeats) &&
+        (n.repeats as number) > 0 &&
+        n.children.every(isValidNode)
+      );
+    }
+
+    return (
+      isStr(n.label) &&
+      typeof n.duration === 'number' &&
+      Number.isFinite(n.duration) &&
+      (n.duration as number) > 0 &&
+      (typeof n.unit === 'undefined' || n.unit === 's' || n.unit === 'm') &&
+      (typeof n.pause === 'undefined' || typeof n.pause === 'boolean')
+    );
+  };
+
   return (
-    typeof r.name === 'string' &&
-    (typeof r.created === 'undefined' || typeof r.created === 'string') &&
-    (typeof r.edited === 'undefined' || typeof r.edited === 'string') &&
-    Array.isArray(r.data)
+    isStr(r.name) &&
+    isOptStr(r.created) &&
+    isOptStr(r.edited) &&
+    isOptStr(r.executed) &&
+    Array.isArray(r.data) &&
+    r.data.every(isValidNode)
   );
 }

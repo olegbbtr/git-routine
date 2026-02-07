@@ -50,22 +50,33 @@ export function Settings() {
     setValidating(true);
     setTokenValid(null);
     setRoutineCount(null);
-    const ok = await validateToken(settings.githubToken);
-    setTokenValid(ok);
-    if (ok) {
-      const list = await listRepos(settings.githubToken);
-      setRepos(list);
+    try {
+      const ok = await validateToken(settings.githubToken);
+      setTokenValid(ok);
+      if (ok) {
+        const list = await listRepos(settings.githubToken);
+        setRepos(list);
+      }
+    } catch {
+      setTokenValid(false);
+      showToast('GitHub validation failed');
+    } finally {
+      setValidating(false);
     }
-    setValidating(false);
   };
 
   const handleCheckRepo = async () => {
     if (!settings.repo || !settings.githubToken) return;
     setValidating(true);
     setRoutineCount(null);
-    const count = await countRemoteRoutines(settings.repo, settings.githubToken);
-    setRoutineCount(count);
-    setValidating(false);
+    try {
+      const count = await countRemoteRoutines(settings.repo, settings.githubToken);
+      setRoutineCount(count);
+    } catch {
+      showToast('Repository check failed');
+    } finally {
+      setValidating(false);
+    }
   };
 
   const handleImportExamples = () => {
