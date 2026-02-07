@@ -1,0 +1,40 @@
+{
+  "name": "HIIT Workout",
+  "data": [
+    {
+      "label": "Warm up",
+      "duration": 10,
+      "unit": "s"
+    },
+    {
+      "label": "Circuit",
+      "repeats": 3,
+      "children": [
+        {
+          "label": "Jumping jacks",
+          "duration": 30
+        },
+        {
+          "label": "Break",
+          "duration": 15
+        },
+        {
+          "label": "Push-ups",
+          "duration": 15
+        },
+        {
+          "label": "Break",
+          "duration": 15
+        },
+        {
+          "label": "Squats",
+          "duration": 15
+        },
+        {
+          "label": "Break",
+          "duration": 15
+        }
+      ]
+    }
+  ]
+}
