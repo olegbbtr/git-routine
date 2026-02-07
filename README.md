@@ -33,7 +33,7 @@ npm run build
 
 Project directory roles:
 - `static/`: source static assets copied into builds
-- `public/`: committed production build output
+- `dist/`: generated production build output (not committed)
 
 Build output paths are deterministic and non-minified:
 - `/assets/index.js`
@@ -74,7 +74,7 @@ src/
 
 examples/routines/
 static/
-public/
+dist/
 test/
 SPEC.md
 ```
