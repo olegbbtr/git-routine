@@ -1,0 +1,19 @@
+{
+  "name": "Neck stretch",
+  "data": [
+    {
+      "label": "Set 1",
+      "repeats": 1,
+      "children": [
+        { "label": "Wall angels", "duration": 20 },
+        { "label": "Doorway stretch", "duration": 40 },
+        { "label": "Head turns", "duration": 30 },
+        { "label": "Side stretch", "duration": 40 },
+        { "label": "Chin tucks", "duration": 40 },
+        { "label": "Shoulder blade squeeze", "duration": 40 },
+        { "label": "Front neck stretch left", "duration": 30 },
+        { "label": "Front neck stretch right", "duration": 30 }
+      ]
+    }
+  ]
+}
