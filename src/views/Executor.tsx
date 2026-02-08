@@ -7,11 +7,11 @@ import { pushHistory } from '../services/github';
 import { showToast } from '../services/toast';
 import { flatten } from '../services/flattener';
 import { playCountdownBeep, unlockAudio, speak } from '../services/audio';
-import { shouldAnnounceHalfway } from '../services/runnerRules';
+import { shouldAnnounceHalfway } from '../services/executorRules';
 import * as wakelock from '../services/wakelock';
 import { ArrowLeft, X, Pencil, Play, Pause as PauseIcon, SkipBack, SkipForward } from '../icons';
 
-export function Runner({ filename }: { filename: string }) {
+export function Executor({ filename }: { filename: string }) {
   const routine = getRoutine(filename);
   const [steps] = useState<FlatStep[]>(() => routine ? flatten(routine.data) : []);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -306,23 +306,23 @@ export function Runner({ filename }: { filename: string }) {
       </div>
 
       {done ? (
-        <div class="runner-current">
-          <div class="runner-label">Complete!</div>
+        <div class="executor-current">
+          <div class="executor-label">Complete!</div>
           <button class="btn-primary" onClick={() => navigate('')} style="margin-top:16px">Back to Dashboard</button>
         </div>
       ) : (
         <>
-          <div class="runner-current">
-            <div class="runner-label">{showWarmup ? 'Get Ready' : currentStep.label}</div>
+          <div class="executor-current">
+            <div class="executor-label">{showWarmup ? 'Get Ready' : currentStep.label}</div>
             {!running && timeLeft === 0 && currentStep.pause ? (
-              <div class="runner-timer" style="font-size:24px;color:var(--text2)">Paused — tap play to continue</div>
+              <div class="executor-timer" style="font-size:24px;color:var(--text2)">Paused - tap play to continue</div>
             ) : (
-              <div class="runner-timer">
+              <div class="executor-timer">
                 {minutes > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}` : seconds}
               </div>
             )}
             {!showWarmup && <div class="card-sub">Step {currentIndex + 1} of {steps.length}</div>}
-            <div class="runner-controls">
+            <div class="executor-controls">
               <button class="btn-icon" onClick={handlePrev} title="Previous"><SkipBack size={20} /></button>
               <button class="btn-icon" onClick={handlePlayPause}>
                 {isActive ? <PauseIcon size={20} /> : <Play size={20} />}
@@ -331,11 +331,11 @@ export function Runner({ filename }: { filename: string }) {
             </div>
           </div>
 
-          <div class="runner-steps">
+          <div class="executor-steps">
             {steps.map((s, i) => (
               <div
                 key={i}
-                class={`runner-step ${i === currentIndex && !showWarmup ? 'active' : ''} ${i < currentIndex ? 'done' : ''}`}
+                class={`executor-step ${i === currentIndex && !showWarmup ? 'active' : ''} ${i < currentIndex ? 'done' : ''}`}
               >
                 <span>{s.label}{s.pause ? ' ||' : ''}</span>
                 <span>{formatDuration(s.duration)}</span>

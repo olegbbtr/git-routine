@@ -39,5 +39,5 @@ test('parseHash handles malformed encoded segments without throwing', async () =
 
   assert.doesNotThrow(() => parseHash('#/edit/%E0%A4%A'));
   assert.deepEqual(parseHash('#/edit/%E0%A4%A'), { view: 'editor', filename: '%E0%A4%A' });
-  assert.deepEqual(parseHash('#/run/my%20routine'), { view: 'runner', filename: 'my routine' });
+  assert.deepEqual(parseHash('#/execute/my%20routine'), { view: 'executor', filename: 'my routine' });
 });

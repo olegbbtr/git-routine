@@ -85,7 +85,7 @@ export function Dashboard() {
                 <div class="card-sub">Executed: {r.executed ? formatDateTime(r.executed) : 'never'}</div>
               </div>
               <div style="display:flex;gap:6px">
-                <button class="btn-icon" onClick={() => navigate('run/' + filename)} title="Start"><Play size={20} /></button>
+                <button class="btn-icon" onClick={() => navigate('execute/' + filename)} title="Execute"><Play size={20} /></button>
                 <button class="btn-icon" onClick={() => navigate('edit/' + filename)} title="Edit"><Pencil size={20} /></button>
                 <button class="btn-icon" onClick={() => handleDelete(filename)} title="Delete" style="color:var(--danger)"><Delete size={20} /></button>
               </div>

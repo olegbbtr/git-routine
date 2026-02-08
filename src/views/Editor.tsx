@@ -6,6 +6,7 @@ import { getRoutine, saveRoutine, deleteRoutine, loadSettings, removeRoutineSha 
 import { pushRoutine, deleteRoutineRemote } from '../services/github';
 import { showToast } from '../services/toast';
 import { ArrowLeft, Play, Pause, Delete } from '../icons';
+import { DurationStepper } from '../components/DurationStepper';
 
 interface NodeEditorProps {
   node: RoutineNode;
@@ -159,21 +160,12 @@ function NodeEditor({ node, onUpdate, onDelete, onDragStart, onDragOver, onDrop 
           onInput={(e) => onUpdate({ ...step, label: (e.target as HTMLInputElement).value })}
           style="flex:1"
         />
-        <div class="num-stepper">
-          <button class="num-stepper-btn" type="button" onClick={() => { const inc = step.unit === 'm' ? 1 : 10; if (step.duration > inc) onUpdate({ ...step, duration: step.duration - inc }); }}>-</button>
-          <input
-            type="number"
-            class="inline-input duration-input"
-            value={step.duration}
-            onInput={(e) => {
-              const v = parseInt((e.target as HTMLInputElement).value);
-              if (v > 0) onUpdate({ ...step, duration: v });
-            }}
-            min="1"
-          />
-          <button class="num-stepper-btn" type="button" onClick={() => { const inc = step.unit === 'm' ? 1 : 10; onUpdate({ ...step, duration: step.duration + inc }); }}>+</button>
-          <button type="button" class="num-stepper-btn num-stepper-unit" onClick={() => onUpdate({ ...step, unit: step.unit === 'm' ? 's' : 'm' })}>{step.unit === 'm' ? 'm' : 's'}</button>
-        </div>
+        <DurationStepper
+          value={step.duration}
+          unit={step.unit === 'm' ? 'm' : 's'}
+          min={1}
+          onChange={(duration, unit) => onUpdate({ ...step, duration, unit })}
+        />
         <button
           class="btn-icon"
           aria-pressed={step.pause}
@@ -314,9 +306,9 @@ export function Editor({ filename: initialFilename }: { filename: string }) {
           onClick={() => {
             const updated = markEdited(routine);
             persistLocal(currentFilenameRef.current, updated);
-            navigate('run/' + currentFilenameRef.current);
+            navigate('execute/' + currentFilenameRef.current);
           }}
-          title="Run"
+          title="Execute"
         >
           <Play size={20} />
         </button>

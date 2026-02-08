@@ -3,7 +3,7 @@ export type Route =
   | { view: 'settings' }
   | { view: 'history' }
   | { view: 'editor'; filename: string }
-  | { view: 'runner'; filename: string };
+  | { view: 'executor'; filename: string };
 
 export function parseHash(hash: string): Route {
   const safeDecode = (value: string) => {
@@ -16,7 +16,7 @@ export function parseHash(hash: string): Route {
 
   const h = hash.replace(/^#\/?/, '');
   if (h.startsWith('edit/')) return { view: 'editor', filename: safeDecode(h.slice(5)) };
-  if (h.startsWith('run/')) return { view: 'runner', filename: safeDecode(h.slice(4)) };
+  if (h.startsWith('execute/')) return { view: 'executor', filename: safeDecode(h.slice(8)) };
   if (h === 'settings') return { view: 'settings' };
   if (h === 'history') return { view: 'history' };
   return { view: 'dashboard' };

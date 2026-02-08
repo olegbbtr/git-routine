@@ -90,7 +90,7 @@ test('example routines flatten with consistent total duration', () => {
 });
 
 test('halfway announcement threshold uses 30s minimum', async () => {
-  const sourcePath = join(process.cwd(), 'src', 'services', 'runnerRules.ts');
+  const sourcePath = join(process.cwd(), 'src', 'services', 'executorRules.ts');
   const source = readFileSync(sourcePath, 'utf8');
   const transpiled = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },

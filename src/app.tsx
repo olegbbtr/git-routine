@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'preact/hooks';
 import { Dashboard } from './views/Dashboard';
 import { Editor } from './views/Editor';
-import { Runner } from './views/Runner';
+import { Executor } from './views/Executor';
 import { History } from './views/History';
 import { Settings } from './views/Settings';
 import { parseHash } from './services/router';
@@ -27,8 +27,8 @@ export function App() {
       return <History />;
     case 'editor':
       return <Editor filename={route.filename} />;
-    case 'runner':
-      return <Runner filename={route.filename} />;
+    case 'executor':
+      return <Executor filename={route.filename} />;
     default:
       return <Dashboard />;
   }

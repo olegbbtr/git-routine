@@ -6,6 +6,7 @@ import { showToast } from '../services/toast';
 import { importExamples } from '../services/examples';
 import { speak, unlockAudio } from '../services/audio';
 import { ArrowLeft, Info, ExternalLink } from '../icons';
+import { DurationStepper } from '../components/DurationStepper';
 
 interface RepoOption {
   full_name: string;
@@ -14,6 +15,12 @@ interface RepoOption {
 
 export function Settings() {
   const [settings, setSettings] = useState(() => loadSettings());
+  const [warmupUnit, setWarmupUnit] = useState<'s' | 'm'>(() => (
+    settings.warmupDuration >= 60 && settings.warmupDuration % 60 === 0 ? 'm' : 's'
+  ));
+  const [announceNextUnit, setAnnounceNextUnit] = useState<'s' | 'm'>(() => (
+    settings.announceNextSeconds >= 60 && settings.announceNextSeconds % 60 === 0 ? 'm' : 's'
+  ));
   const [repos, setRepos] = useState<RepoOption[]>([]);
   const [validating, setValidating] = useState(false);
   const [tokenValid, setTokenValid] = useState<boolean | null>(null);
@@ -160,21 +167,15 @@ export function Settings() {
         <div class="toggle-row">
           <span>Prepare duration</span>
           <div style="display:flex;align-items:center;gap:4px">
-            <div class="num-stepper">
-              <button class="num-stepper-btn" type="button" onClick={() => update({ warmupDuration: Math.max(0, settings.warmupDuration - 1) })}>-</button>
-              <input
-                type="number"
-                class="inline-input duration-input"
-                value={settings.warmupDuration}
-                onInput={(e) => {
-                  const v = parseInt((e.target as HTMLInputElement).value);
-                  update({ warmupDuration: v >= 0 ? v : 0 });
-                }}
-                min="0"
-              />
-              <button class="num-stepper-btn" type="button" onClick={() => update({ warmupDuration: settings.warmupDuration + 1 })}>+</button>
-              <span class="num-stepper-suffix">s</span>
-            </div>
+            <DurationStepper
+              value={warmupUnit === 'm' ? Math.floor(settings.warmupDuration / 60) : settings.warmupDuration}
+              unit={warmupUnit}
+              min={0}
+              onChange={(value, unit) => {
+                setWarmupUnit(unit);
+                update({ warmupDuration: unit === 'm' ? value * 60 : value });
+              }}
+            />
           </div>
         </div>
 
@@ -209,21 +210,15 @@ export function Settings() {
         <div class="toggle-row">
           <span>Next Step</span>
           <div style="display:flex;align-items:center;gap:4px">
-            <div class="num-stepper">
-              <button class="num-stepper-btn" type="button" onClick={() => { if (settings.announceNextSeconds > 1) update({ announceNextSeconds: settings.announceNextSeconds - 1 }); }}>-</button>
-              <input
-                type="number"
-                class="inline-input duration-input"
-                value={settings.announceNextSeconds}
-                onInput={(e) => {
-                  const v = parseInt((e.target as HTMLInputElement).value);
-                  if (v > 0) update({ announceNextSeconds: v });
-                }}
-                min="1"
-              />
-              <button class="num-stepper-btn" type="button" onClick={() => update({ announceNextSeconds: settings.announceNextSeconds + 1 })}>+</button>
-              <span class="num-stepper-suffix">s</span>
-            </div>
+            <DurationStepper
+              value={announceNextUnit === 'm' ? Math.floor(settings.announceNextSeconds / 60) : settings.announceNextSeconds}
+              unit={announceNextUnit}
+              min={1}
+              onChange={(value, unit) => {
+                setAnnounceNextUnit(unit);
+                update({ announceNextSeconds: unit === 'm' ? value * 60 : value });
+              }}
+            />
             <label class="toggle">
               <input
                 type="checkbox"

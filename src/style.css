@@ -249,13 +249,13 @@ select:focus {
   background: white;
 }
 
-/* Runner specific */
-.runner-current {
+/* Executor specific */
+.executor-current {
   text-align: center;
   padding: 32px 16px;
 }
 
-.runner-timer {
+.executor-timer {
   font-size: 72px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -263,33 +263,33 @@ select:focus {
   margin: 16px 0;
 }
 
-.runner-label {
+.executor-label {
   font-size: 24px;
   font-weight: 500;
   margin-bottom: 8px;
 }
 
-.runner-controls {
+.executor-controls {
   display: flex;
   justify-content: center;
   gap: 12px;
   margin-top: 20px;
 }
 
-.runner-controls button {
+.executor-controls button {
   width: 64px;
   height: 64px;
   font-size: 26px;
   border-radius: 50%;
 }
 
-.runner-steps {
+.executor-steps {
   margin-top: 24px;
   border-top: 1px solid var(--border);
   padding-top: 16px;
 }
 
-.runner-step {
+.executor-step {
   display: flex;
   justify-content: space-between;
   padding: 8px 12px;
@@ -298,13 +298,13 @@ select:focus {
   color: var(--text2);
 }
 
-.runner-step.active {
+.executor-step.active {
   background: var(--surface2);
   color: var(--text);
   font-weight: 500;
 }
 
-.runner-step.done {
+.executor-step.done {
   text-decoration: line-through;
   opacity: 0.4;
 }
@@ -448,14 +448,6 @@ select:focus {
   align-items: center;
   gap: 0;
   position: relative;
-}
-
-.num-stepper-suffix {
-  position: absolute;
-  right: 36px;
-  font-size: 14px;
-  color: var(--text2);
-  pointer-events: none;
 }
 
 .num-stepper-unit {

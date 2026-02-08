@@ -10,7 +10,7 @@ It runs entirely in the browser, stores data in LocalStorage, and can optionally
 - Optional warmup before start
 - Speech announcements (current/next/halfway/completion)
 - Countdown beeps (3-2-1)
-- History logging with rerun/edit shortcuts
+- History logging with re-execute/edit shortcuts
 - Optional GitHub backup sync (`routines/*.json`, `history.json`)
 
 ## Tech Stack
@@ -24,7 +24,10 @@ npm install
 npm run dev
 ```
 
-Open the local Vite URL and use hash routes like `#/`, `#/settings`, `#/edit/<filename>`, `#/run/<filename>`.
+Open the local Vite URL and use hash routes like `#/`, `#/settings`, `#/edit/<filename>`, `#/execute/<filename>`.
+
+## Live App
+[https://git-routine.bbtr.dev](https://git-routine.bbtr.dev)
 
 ## Build, Output, and Static Files
 ```bash
@@ -57,7 +60,7 @@ Current tests validate:
 1. Open `#/settings`.
 2. Add a GitHub Personal Access Token with repository contents read/write permissions.
 3. Validate token and select a repository.
-4. Save or run routines to push updates.
+4. Save or execute routines to push updates.
 
 Remote file layout:
 - `routines/<filename>.json`
@@ -66,6 +69,7 @@ Remote file layout:
 ## Project Structure
 ```text
 src/
+  components/
   services/
   views/
   types.ts

@@ -57,7 +57,7 @@ export function History() {
                 </div>
                 <div style="display:flex;gap:6px">
                   {filename && <button class="btn-icon" onClick={() => navigate('edit/' + filename)} title="Edit"><Pencil size={20} /></button>}
-                  <button class="btn-icon" onClick={() => { if (filename) navigate('run/' + filename); }} title="Run again"><Play size={20} /></button>
+                  <button class="btn-icon" onClick={() => { if (filename) navigate('execute/' + filename); }} title="Execute again"><Play size={20} /></button>
                   <button class="btn-icon" onClick={() => handleDelete(log.id)} title="Delete" style="color:var(--danger)"><Delete size={20} /></button>
                 </div>
               </div>
