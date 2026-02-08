@@ -58,7 +58,18 @@ export function Dashboard() {
     }
   };
 
-  const entries = Object.entries(routines);
+  const entries = Object.entries(routines).sort(([filenameA, routineA], [filenameB, routineB]) => {
+    const executedA = routineA.executed ? Date.parse(routineA.executed) : Number.NEGATIVE_INFINITY;
+    const executedB = routineB.executed ? Date.parse(routineB.executed) : Number.NEGATIVE_INFINITY;
+    const safeExecutedA = Number.isNaN(executedA) ? Number.NEGATIVE_INFINITY : executedA;
+    const safeExecutedB = Number.isNaN(executedB) ? Number.NEGATIVE_INFINITY : executedB;
+
+    if (safeExecutedA !== safeExecutedB) return safeExecutedB - safeExecutedA;
+
+    const nameCmp = routineA.name.localeCompare(routineB.name);
+    if (nameCmp !== 0) return nameCmp;
+    return filenameA.localeCompare(filenameB);
+  });
 
   return (
     <div>
