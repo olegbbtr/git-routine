@@ -325,6 +325,10 @@ select:focus {
   cursor: grab;
 }
 
+.editor-node-header > .inline-input {
+  min-width: 0;
+}
+
 .editor-node-header:active {
   cursor: grabbing;
 }
