@@ -12,27 +12,27 @@
       "children": [
         {
           "label": "Jumping jacks",
-          "duration": 30
+          "duration": 20
         },
         {
           "label": "Break",
-          "duration": 15
+          "duration": 10
         },
         {
           "label": "Push-ups",
-          "duration": 15
+          "duration": 20
         },
         {
           "label": "Break",
-          "duration": 15
+          "duration": 10
         },
         {
           "label": "Squats",
-          "duration": 15
+          "duration": 20
         },
         {
           "label": "Break",
-          "duration": 15
+          "duration": 10
         }
       ]
     }
