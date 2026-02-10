@@ -1,14 +1,26 @@
 {
-  "name": "Pomodoro",
+  "name": "5. Pomodoro",
   "data": [
     {
       "label": "Focus session",
       "repeats": 4,
       "children": [
-        { "label": "Work", "duration": 25, "unit": "m" },
-        { "label": "Short break", "duration": 5, "unit": "m" }
+        {
+          "label": "Work",
+          "duration": 25,
+          "unit": "m"
+        },
+        {
+          "label": "Short break",
+          "duration": 5,
+          "unit": "m"
+        }
       ]
     },
-    { "label": "Long break", "duration": 15, "unit": "m" }
+    {
+      "label": "Long break",
+      "duration": 15,
+      "unit": "m"
+    }
   ]
 }

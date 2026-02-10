@@ -1,41 +1,80 @@
 {
-  "name": "Warmup",
+  "name": "3. Warmup",
   "data": [
     {
       "label": "Set 1",
       "repeats": 1,
       "children": [
-        { "label": "Head tilts", "duration": 20 },
-        { "label": "Head turns", "duration": 20 },
-        { "label": "Chin tucks", "duration": 20 }
+        {
+          "label": "Head tilts",
+          "duration": 20
+        },
+        {
+          "label": "Head turns",
+          "duration": 20
+        },
+        {
+          "label": "Chin tucks",
+          "duration": 20
+        }
       ]
     },
     {
       "label": "Set 2",
       "repeats": 1,
       "children": [
-        { "label": "Arm rotations", "duration": 30 },
-        { "label": "Elbow rotations", "duration": 30 },
-        { "label": "Shoulder rotation", "duration": 20 }
+        {
+          "label": "Arm rotations",
+          "duration": 30
+        },
+        {
+          "label": "Elbow rotations",
+          "duration": 30
+        },
+        {
+          "label": "Shoulder rotation",
+          "duration": 20
+        }
       ]
     },
     {
       "label": "Set 3",
       "repeats": 1,
       "children": [
-        { "label": "Forward bends", "duration": 20 },
-        { "label": "Side bends", "duration": 20 },
-        { "label": "Body twists", "duration": 20 }
+        {
+          "label": "Forward bends",
+          "duration": 20
+        },
+        {
+          "label": "Side bends",
+          "duration": 20
+        },
+        {
+          "label": "Body twists",
+          "duration": 20
+        }
       ]
     },
     {
       "label": "Set 4",
       "repeats": 1,
       "children": [
-        { "label": "Leg swings", "duration": 30 },
-        { "label": "Feet raises", "duration": 20 },
-        { "label": "Steam engines", "duration": 30 },
-        { "label": "Squats", "duration": 30 }
+        {
+          "label": "Leg swings",
+          "duration": 30
+        },
+        {
+          "label": "Feet raises",
+          "duration": 20
+        },
+        {
+          "label": "Steam engines",
+          "duration": 30
+        },
+        {
+          "label": "Squats",
+          "duration": 30
+        }
       ]
     }
   ]

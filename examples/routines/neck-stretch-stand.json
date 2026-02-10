@@ -1,0 +1,31 @@
+{
+  "name": "2. Neck stretch stand",
+  "data": [
+    {
+      "label": "Set 1",
+      "repeats": 1,
+      "children": [
+        {
+          "label": "Wall angels",
+          "duration": 20
+        },
+        {
+          "label": "Head turns",
+          "duration": 30
+        },
+        {
+          "label": "Head tilts",
+          "duration": 30
+        },
+        {
+          "label": "Chin tucks",
+          "duration": 40
+        },
+        {
+          "label": "Doorway stretch",
+          "duration": 40
+        }
+      ]
+    }
+  ]
+}
