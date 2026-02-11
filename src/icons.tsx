@@ -52,3 +52,12 @@ export const ExternalLink = ({ size = 18 }: P) => (
 export const Info = ({ size = 18 }: P) => (
   <svg {...s(size)}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
 );
+
+export const RefreshCw = ({ size = 18 }: P) => (
+  <svg {...s(size)}>
+    <polyline points="23 4 23 10 17 10" />
+    <polyline points="1 20 1 14 7 14" />
+    <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10" />
+    <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14" />
+  </svg>
+);

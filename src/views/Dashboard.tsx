@@ -6,22 +6,21 @@ import { loadRoutines, saveRoutine, deleteRoutine, loadSettings, slugify, unique
 import { pullRoutines, deleteRoutineRemote } from '../services/github';
 import { showToast } from '../services/toast';
 
-import { Play, Pencil, Delete, Settings } from '../icons';
+import { Play, Pencil, Delete, Settings, RefreshCw } from '../icons';
 
 export function Dashboard() {
   const [routines, setRoutines] = useState<Record<string, Routine>>(() => loadRoutines());
   const [syncing, setSyncing] = useState(false);
 
-  useEffect(() => {
-    const invalid = getInvalidRoutineNames();
-    if (invalid.length > 0) {
-      showToast(`Invalid routines removed: ${invalid.join(', ')}`);
-    }
-  }, []);
-
-  useEffect(() => {
+  const syncFromGithub = (silentIfNotConfigured = false) => {
+    if (syncing) return;
     const settings = loadSettings();
-    if (!settings.githubToken || !settings.repo) return;
+    if (!settings.githubToken || !settings.repo) {
+      if (!silentIfNotConfigured) {
+        showToast('Configure GitHub in Settings to sync');
+      }
+      return;
+    }
 
     setSyncing(true);
     pullRoutines(settings.repo, settings.githubToken)
@@ -35,6 +34,17 @@ export function Dashboard() {
       })
       .catch(() => showToast('GitHub sync failed'))
       .finally(() => setSyncing(false));
+  };
+
+  useEffect(() => {
+    const invalid = getInvalidRoutineNames();
+    if (invalid.length > 0) {
+      showToast(`Invalid routines removed: ${invalid.join(', ')}`);
+    }
+  }, []);
+
+  useEffect(() => {
+    syncFromGithub(true);
   }, []);
 
   const handleNew = () => {
@@ -76,6 +86,9 @@ export function Dashboard() {
       <div class="header">
         <h1>GitRoutine {syncing && <span style="font-size:12px;color:var(--text2)">syncing...</span>}</h1>
         <div class="header-actions">
+          <button class="btn-icon" onClick={() => syncFromGithub()} disabled={syncing} title="Sync" aria-label="Sync">
+            <RefreshCw size={20} />
+          </button>
           <button class="btn-icon" onClick={() => navigate('history')} style="width:auto;padding:0 12px">History</button>
           <button class="btn-icon" onClick={() => navigate('settings')} title="Settings"><Settings size={20} /></button>
           <button class="btn-icon" onClick={handleNew} title="New routine">+</button>
