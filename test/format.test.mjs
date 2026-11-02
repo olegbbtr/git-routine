@@ -2,43 +2,42 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseDuration } from '../src/format/duration.ts';
+import { parseStepValue } from '../src/format/duration.ts';
+import { fromLegacy, plannedSeconds, hasActions } from '../src/format/model.ts';
 import { parseRoutineYaml, serializeRoutineYaml, RoutineFormatError } from '../src/format/routineYaml.ts';
 import { slugify, uniqueSlug } from '../src/format/slug.ts';
 import { runPath, validateRun } from '../src/format/run.ts';
 import { planMigration } from '../src/format/migrate.ts';
-import { flatten } from '../src/services/flattener.ts';
 
 const examplesDir = join(process.cwd(), 'examples', 'routines');
 
-test('parseDuration accepts the documented forms', () => {
-  assert.deepEqual(parseDuration('20s'), { duration: 20, wait: false });
-  assert.deepEqual(parseDuration('5m'), { duration: 5, unit: 'm', wait: false });
-  assert.deepEqual(parseDuration('1m30s'), { duration: 90, wait: false });
-  assert.deepEqual(parseDuration('1.5m'), { duration: 1.5, unit: 'm', wait: false });
-  assert.deepEqual(parseDuration(45), { duration: 45, wait: false });
-  assert.deepEqual(parseDuration('30s wait'), { duration: 30, wait: true });
-  for (const bad of ['', '0s', '-5s', '5h', 'abc', 'wait', null, {}]) {
-    assert.equal(parseDuration(bad), null, String(bad));
+test('parseStepValue accepts the documented forms', () => {
+  const iv = (duration, unit = 's', confirm = false) => ({ kind: 'interval', duration, unit, confirm });
+  assert.deepEqual(parseStepValue('20s'), iv(20));
+  assert.deepEqual(parseStepValue('5m'), iv(5, 'm'));
+  assert.deepEqual(parseStepValue('1m30s'), iv(90));
+  assert.deepEqual(parseStepValue('1.5m'), iv(1.5, 'm'));
+  assert.deepEqual(parseStepValue(45), iv(45));
+  assert.deepEqual(parseStepValue('30s wait'), iv(30, 's', true));
+  assert.deepEqual(parseStepValue('wait'), { kind: 'action' });
+  for (const bad of ['', '0s', '-5s', '5h', 'abc', 'wait wait', null, {}]) {
+    assert.equal(parseStepValue(bad), null, String(bad));
   }
 });
 
-test('YAML round trip keeps flattened timing of every example routine', () => {
+test('YAML round trip is exact for every example routine', () => {
   for (const file of readdirSync(examplesDir).filter(f => f.endsWith('.json'))) {
-    const routine = JSON.parse(readFileSync(join(examplesDir, file), 'utf8'));
-    const parsed = parseRoutineYaml(serializeRoutineYaml(routine));
-    assert.equal(parsed.name, routine.name, file);
-    const strip = steps => steps.map(({ label, duration, pause }) => ({ label, duration, pause: !!pause }));
-    assert.deepEqual(strip(flatten(parsed.data)), strip(flatten(routine.data)), file);
+    const routine = fromLegacy(JSON.parse(readFileSync(join(examplesDir, file), 'utf8')));
+    assert.deepEqual(parseRoutineYaml(serializeRoutineYaml(routine)), routine, file);
   }
 });
 
-test('YAML format reads blocks, repeats, wait steps and Cyrillic labels', () => {
+test('YAML format reads groups, repeats, confirm steps, actions and Cyrillic labels', () => {
   const routine = parseRoutineYaml(`
 name: Готовим гречку
 steps:
   - Подготовка:
-      - Вскипятить воду: 30s
+      - Вскипятить воду: wait
       - "Засыпать: крупу": 1m wait
   - Варка:
       repeat: 2
@@ -47,24 +46,65 @@ steps:
 `);
   assert.deepEqual(routine, {
     name: 'Готовим гречку',
-    data: [
-      { label: 'Подготовка', repeats: 1, children: [
-        { label: 'Вскипятить воду', duration: 30 },
-        { label: 'Засыпать: крупу', duration: 1, unit: 'm', pause: true },
+    steps: [
+      { kind: 'group', label: 'Подготовка', repeat: 1, steps: [
+        { kind: 'action', label: 'Вскипятить воду' },
+        { kind: 'interval', label: 'Засыпать: крупу', duration: 1, unit: 'm', confirm: true },
       ] },
-      { label: 'Варка', repeats: 2, children: [{ label: 'Помешать', duration: 90 }] },
+      { kind: 'group', label: 'Варка', repeat: 2, steps: [
+        { kind: 'interval', label: 'Помешать', duration: 90, unit: 's' },
+      ] },
     ],
   });
+});
+
+test('parallel branches parse, round trip and plan by the longest branch', () => {
+  const text = `
+name: Гречка с зажаркой
+steps:
+  - Гречка и зажарка:
+      parallel:
+        - Гречка:
+            - Варить: 15m
+            - Настоять: 5m
+        - Зажарка:
+            - Нарезать лук: wait
+            - Обжарить: 5m
+  - Подать: wait
+`;
+  const routine = parseRoutineYaml(text);
+  const par = routine.steps[0];
+  assert.equal(par.kind, 'parallel');
+  assert.deepEqual(par.branches.map(b => b.label), ['Гречка', 'Зажарка']);
+  assert.deepEqual(parseRoutineYaml(serializeRoutineYaml(routine)), routine);
+  assert.equal(plannedSeconds(routine.steps), 20 * 60);
+  assert.equal(hasActions(routine.steps), true);
+
+  const nested = parseRoutineYaml(`
+name: N
+steps:
+  - Круг:
+      repeat: 2
+      steps:
+        - P:
+            parallel:
+              - A: [{ X: 10s }]
+              - B: [{ Y: 30s }, { Z: 5s }]
+`);
+  assert.equal(plannedSeconds(nested.steps), 2 * 35);
 });
 
 test('YAML format errors point at the broken element', () => {
   const cases = [
     ['name: X\nsteps:\n  - A: 10s\n    B: 5s\n', /steps\[0\].*ровно одна метка/],
-    ['name: X\nsteps:\n  - A: soon\n', /steps\[0\] "A".*длительность/],
+    ['name: X\nsteps:\n  - A: soon\n', /steps\[0\] "A".*разобрать/],
     ['name: X\nsteps:\n  - B:\n      repeat: 0\n      steps: []\n', /repeat/],
     ['steps: []\n', /name/],
     ['name: X\nsteps: []\nextra: 1\n', /extra/],
     ['name: X\nsteps: [\n', /YAML/],
+    ['name: X\nsteps:\n  - P:\n      parallel:\n        - A: [{ X: 5s }]\n', /минимум из двух/],
+    ['name: X\nsteps:\n  - P:\n      parallel: []\n      repeat: 2\n', /рядом с parallel/],
+    ['name: X\nsteps:\n  - P:\n      parallel:\n        - A: 5s\n        - B: [{ X: 5s }]\n', /ожидается список/],
   ];
   for (const [text, pattern] of cases) {
     assert.throws(() => parseRoutineYaml(text), err => err instanceof RoutineFormatError && pattern.test(err.message), text);
@@ -111,8 +151,9 @@ test('planMigration converts routines and splits history into run files', () => 
 
   assert.deepEqual(Object.keys(plan.writes).filter(p => p.startsWith('routines/')).sort(),
     ['routines/gotovim-grechku.yaml', 'routines/warmup.yaml']);
-  assert.deepEqual(parseRoutineYaml(plan.writes['routines/warmup.yaml']).data, [
-    { label: 'A', duration: 60 }, { label: 'B', duration: 1, unit: 'm' },
+  assert.deepEqual(parseRoutineYaml(plan.writes['routines/warmup.yaml']).steps, [
+    { kind: 'interval', label: 'A', duration: 60, unit: 's' },
+    { kind: 'interval', label: 'B', duration: 1, unit: 'm' },
   ]);
   assert.deepEqual(plan.deletes.sort(), ['history.json', 'routines/warmup.json', 'routines/Готовим гречку.json'].sort());
 

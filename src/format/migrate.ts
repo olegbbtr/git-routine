@@ -1,6 +1,7 @@
 import type { SessionLog } from '../types';
 import { validateRoutine, calcDuration } from '../types.ts';
 import { serializeRoutineYaml } from './routineYaml.ts';
+import { fromLegacy } from './model.ts';
 import { slugify, uniqueSlug } from './slug.ts';
 import { runPath, serializeRun, validateRun, type Run } from './run.ts';
 
@@ -41,7 +42,7 @@ export function planMigration(repo: LegacyRepo): MigrationPlan {
     const slug = uniqueSlug(slugify(base), plannedBySlug.keys());
     plannedBySlug.set(slug, calcDuration(obj.data));
     if (!slugByName.has(obj.name)) slugByName.set(obj.name, slug);
-    writes[`routines/${slug}.yaml`] = serializeRoutineYaml(obj);
+    writes[`routines/${slug}.yaml`] = serializeRoutineYaml(fromLegacy(obj));
     deletes.push(path);
     report.push(`рутина: ${path} -> routines/${slug}.yaml ("${obj.name}")`);
   }
