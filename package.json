@@ -10,7 +10,8 @@
     "test": "tsc && node --test test/**/*.test.mjs"
   },
   "dependencies": {
-    "preact": "^10.28.3"
+    "preact": "^10.28.3",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.3",

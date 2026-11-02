@@ -1,5 +1,5 @@
 import type { RoutineNode, FlatStep } from '../types';
-import { isBlock, stepSeconds } from '../types';
+import { isBlock, stepSeconds } from '../types.ts';
 
 export function flatten(nodes: RoutineNode[]): FlatStep[] {
   const result: FlatStep[] = [];
